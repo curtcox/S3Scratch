@@ -11,7 +11,7 @@ public class App {
     static Region region = Region.US_WEST_2;
     final S3Client s3;
     final String key = "key";
-    final String bucket = "bucket" + System.currentTimeMillis();
+    final String tempBucket = "bucket" + System.currentTimeMillis();
 
 
     App(S3Client s3) {
@@ -19,18 +19,32 @@ public class App {
     }
 
     void doStuff() {
+        listBuckets();
         createBucket();
         waitUntilBucketExists();
         uploadObject();
+        listBuckets();
 
         println("Cleaning up...");
         deleteObject();
         deleteBucket();
         println("Cleanup complete");
         println("");
+        listBuckets();
 
         close();
         println("Exiting...");
+    }
+
+    void listBuckets() {
+        println("Buckets Info =");
+        for (Bucket bucket : s3.listBuckets().buckets()) {
+            dump(bucket);
+        }
+    }
+
+    void dump(Bucket bucket) {
+        println(bucket.creationDate() + " " + bucket.name());
     }
 
     void close() {
@@ -42,7 +56,7 @@ public class App {
     void uploadObject() {
         println("Uploading object...");
 
-        s3.putObject(PutObjectRequest.builder().bucket(bucket).key(key)
+        s3.putObject(PutObjectRequest.builder().bucket(tempBucket).key(key)
                         .build(),
                 RequestBody.fromString("Testing with the AWS SDK for Java"));
 
@@ -53,34 +67,32 @@ public class App {
     void createBucket() {
         s3.createBucket(CreateBucketRequest
                 .builder()
-                .bucket(bucket)
+                .bucket(tempBucket)
                 .createBucketConfiguration(
                         CreateBucketConfiguration.builder()
                                 .locationConstraint(region.id())
                                 .build())
                 .build());
-        println("Creating bucket: " + bucket);
+        println("Creating bucket: " + tempBucket);
     }
 
     void waitUntilBucketExists() {
         s3.waiter().waitUntilBucketExists(HeadBucketRequest.builder()
-                .bucket(bucket)
+                .bucket(tempBucket)
                 .build());
-        println(bucket +" is ready.");
+        println(tempBucket +" is ready.");
     }
 
     void deleteObject() {
         println("Deleting object: " + key);
-        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder().bucket(bucket).key(key).build();
-        s3.deleteObject(deleteObjectRequest);
+        s3.deleteObject(DeleteObjectRequest.builder().bucket(tempBucket).key(key).build());
         println(key +" has been deleted.");
     }
 
     void deleteBucket() {
-        println("Deleting bucket: " + bucket);
-        DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(bucket).build();
-        s3.deleteBucket(deleteBucketRequest);
-        println(bucket +" has been deleted.");
+        println("Deleting bucket: " + tempBucket);
+        s3.deleteBucket(DeleteBucketRequest.builder().bucket(tempBucket).build());
+        println(tempBucket +" has been deleted.");
         println("");
     }
 
