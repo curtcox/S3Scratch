@@ -19,9 +19,27 @@ public class App {
     }
 
     void doStuff() {
+        createBucket();
+        waitUntilBucketExists();
+        uploadObject();
 
-        tutorialSetup();
+        println("Cleaning up...");
+        deleteObject();
+        deleteBucket();
+        println("Cleanup complete");
+        println("");
 
+        close();
+        println("Exiting...");
+    }
+
+    void close() {
+        println("Closing the connection to Amazon S3");
+        s3.close();
+        println("Connection closed");
+    }
+
+    void uploadObject() {
         println("Uploading object...");
 
         s3.putObject(PutObjectRequest.builder().bucket(bucket).key(key)
@@ -30,22 +48,9 @@ public class App {
 
         println("Upload complete");
         println("");
-
-        cleanUp();
-
-        println("Closing the connection to Amazon S3");
-        s3.close();
-        println("Connection closed");
-        println("Exiting...");
     }
 
-    public static void main(String[] args) {
-        S3Client s3 = S3Client.builder().region(region).build();
-        App app = new App(s3);
-        app.doStuff();
-    }
-
-    void tutorialSetup() {
+    void createBucket() {
         s3.createBucket(CreateBucketRequest
                 .builder()
                 .bucket(bucket)
@@ -55,28 +60,38 @@ public class App {
                                 .build())
                 .build());
         println("Creating bucket: " + bucket);
+    }
+
+    void waitUntilBucketExists() {
         s3.waiter().waitUntilBucketExists(HeadBucketRequest.builder()
                 .bucket(bucket)
                 .build());
         println(bucket +" is ready.");
     }
 
-    void cleanUp() {
-        println("Cleaning up...");
+    void deleteObject() {
         println("Deleting object: " + key);
         DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder().bucket(bucket).key(key).build();
         s3.deleteObject(deleteObjectRequest);
         println(key +" has been deleted.");
+    }
+
+    void deleteBucket() {
         println("Deleting bucket: " + bucket);
         DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(bucket).build();
         s3.deleteBucket(deleteBucketRequest);
         println(bucket +" has been deleted.");
-        println("");
-        println("Cleanup complete");
         println("");
     }
 
     static void println(Object o) {
         System.out.println(o);
     }
+
+    public static void main(String[] args) {
+        S3Client s3 = S3Client.builder().region(region).build();
+        App app = new App(s3);
+        app.doStuff();
+    }
+
 }
