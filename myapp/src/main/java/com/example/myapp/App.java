@@ -8,14 +8,19 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 public class App {
 
-    public static void main(String[] args) {
-        Region region = Region.US_WEST_2;
-        S3Client s3 = S3Client.builder().region(region).build();
+    static Region region = Region.US_WEST_2;
+    final S3Client s3;
+    final String key = "key";
+    final String bucket = "bucket" + System.currentTimeMillis();
 
-        String bucket = "bucket" + System.currentTimeMillis();
-        String key = "key";
 
-        tutorialSetup(s3, bucket, region);
+    App(S3Client s3) {
+        this.s3 = s3;
+    }
+
+    void doStuff() {
+
+        tutorialSetup();
 
         println("Uploading object...");
 
@@ -26,7 +31,7 @@ public class App {
         println("Upload complete");
         println("");
 
-        cleanUp(s3, bucket, key);
+        cleanUp();
 
         println("Closing the connection to Amazon S3");
         s3.close();
@@ -34,32 +39,38 @@ public class App {
         println("Exiting...");
     }
 
-    public static void tutorialSetup(S3Client s3Client, String bucketName, Region region) {
-        s3Client.createBucket(CreateBucketRequest
+    public static void main(String[] args) {
+        S3Client s3 = S3Client.builder().region(region).build();
+        App app = new App(s3);
+        app.doStuff();
+    }
+
+    void tutorialSetup() {
+        s3.createBucket(CreateBucketRequest
                 .builder()
-                .bucket(bucketName)
+                .bucket(bucket)
                 .createBucketConfiguration(
                         CreateBucketConfiguration.builder()
                                 .locationConstraint(region.id())
                                 .build())
                 .build());
-        println("Creating bucket: " + bucketName);
-        s3Client.waiter().waitUntilBucketExists(HeadBucketRequest.builder()
-                .bucket(bucketName)
+        println("Creating bucket: " + bucket);
+        s3.waiter().waitUntilBucketExists(HeadBucketRequest.builder()
+                .bucket(bucket)
                 .build());
-        println(bucketName +" is ready.");
+        println(bucket +" is ready.");
     }
 
-    public static void cleanUp(S3Client s3Client, String bucketName, String keyName) {
+    void cleanUp() {
         println("Cleaning up...");
-        println("Deleting object: " + keyName);
-        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder().bucket(bucketName).key(keyName).build();
-        s3Client.deleteObject(deleteObjectRequest);
-        println(keyName +" has been deleted.");
-        println("Deleting bucket: " + bucketName);
-        DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(bucketName).build();
-        s3Client.deleteBucket(deleteBucketRequest);
-        println(bucketName +" has been deleted.");
+        println("Deleting object: " + key);
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder().bucket(bucket).key(key).build();
+        s3.deleteObject(deleteObjectRequest);
+        println(key +" has been deleted.");
+        println("Deleting bucket: " + bucket);
+        DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(bucket).build();
+        s3.deleteBucket(deleteBucketRequest);
+        println(bucket +" has been deleted.");
         println("");
         println("Cleanup complete");
         println("");
