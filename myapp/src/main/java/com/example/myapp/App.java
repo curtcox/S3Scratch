@@ -1,6 +1,5 @@
 package com.example.myapp;
 
-import java.io.IOException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.model.*;
@@ -9,7 +8,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 public class App {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         Region region = Region.US_WEST_2;
         S3Client s3 = S3Client.builder().region(region).build();
 
