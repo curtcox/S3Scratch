@@ -10,7 +10,6 @@ import software.amazon.awssdk.services.s3.S3Client;
 public class App {
 
     public static void main(String[] args) throws IOException {
-
         Region region = Region.US_WEST_2;
         S3Client s3 = S3Client.builder().region(region).build();
 
@@ -37,43 +36,32 @@ public class App {
     }
 
     public static void tutorialSetup(S3Client s3Client, String bucketName, Region region) {
-        try {
-            s3Client.createBucket(CreateBucketRequest
-                    .builder()
-                    .bucket(bucketName)
-                    .createBucketConfiguration(
-                            CreateBucketConfiguration.builder()
-                                    .locationConstraint(region.id())
-                                    .build())
-                    .build());
-            println("Creating bucket: " + bucketName);
-            s3Client.waiter().waitUntilBucketExists(HeadBucketRequest.builder()
-                    .bucket(bucketName)
-                    .build());
-            println(bucketName +" is ready.");
-            System.out.printf("%n");
-        } catch (S3Exception e) {
-            System.err.println(e.awsErrorDetails().errorMessage());
-            System.exit(1);
-        }
+        s3Client.createBucket(CreateBucketRequest
+                .builder()
+                .bucket(bucketName)
+                .createBucketConfiguration(
+                        CreateBucketConfiguration.builder()
+                                .locationConstraint(region.id())
+                                .build())
+                .build());
+        println("Creating bucket: " + bucketName);
+        s3Client.waiter().waitUntilBucketExists(HeadBucketRequest.builder()
+                .bucket(bucketName)
+                .build());
+        println(bucketName +" is ready.");
     }
 
     public static void cleanUp(S3Client s3Client, String bucketName, String keyName) {
         println("Cleaning up...");
-        try {
-            println("Deleting object: " + keyName);
-            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder().bucket(bucketName).key(keyName).build();
-            s3Client.deleteObject(deleteObjectRequest);
-            println(keyName +" has been deleted.");
-            println("Deleting bucket: " + bucketName);
-            DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(bucketName).build();
-            s3Client.deleteBucket(deleteBucketRequest);
-            println(bucketName +" has been deleted.");
-            System.out.printf("%n");
-        } catch (S3Exception e) {
-            System.err.println(e.awsErrorDetails().errorMessage());
-            System.exit(1);
-        }
+        println("Deleting object: " + keyName);
+        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder().bucket(bucketName).key(keyName).build();
+        s3Client.deleteObject(deleteObjectRequest);
+        println(keyName +" has been deleted.");
+        println("Deleting bucket: " + bucketName);
+        DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(bucketName).build();
+        s3Client.deleteBucket(deleteBucketRequest);
+        println(bucketName +" has been deleted.");
+        System.out.printf("%n");
         println("Cleanup complete");
         System.out.printf("%n");
     }
