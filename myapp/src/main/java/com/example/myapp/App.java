@@ -25,7 +25,7 @@ public class App {
                 RequestBody.fromString("Testing with the AWS SDK for Java"));
 
         println("Upload complete");
-        System.out.printf("%n");
+        println("");
 
         cleanUp(s3, bucket, key);
 
@@ -61,9 +61,9 @@ public class App {
         DeleteBucketRequest deleteBucketRequest = DeleteBucketRequest.builder().bucket(bucketName).build();
         s3Client.deleteBucket(deleteBucketRequest);
         println(bucketName +" has been deleted.");
-        System.out.printf("%n");
+        println("");
         println("Cleanup complete");
-        System.out.printf("%n");
+        println("");
     }
 
     static void println(Object o) {
